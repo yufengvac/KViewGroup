@@ -13,11 +13,12 @@ import kotlin.math.max
 class FlowViewGroup constructor(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) :
     ViewGroup(context, attributeSet, defStyleAttr) {
 
-    private var horizontalSpace = 0
-    private var verticalSpace = 0
-    private val heightList: MutableList<Int> = mutableListOf()
-    private var viewList: MutableList<View> = mutableListOf()
+    private var horizontalSpace = 0//横向间距
+    private var verticalSpace = 0//竖向间距
+    private val heightList: MutableList<Int> = mutableListOf()//高度集合
+    private var viewList: MutableList<View> = mutableListOf()//view的集合
     private var allViewList: MutableList<MutableList<View>> = mutableListOf()
+    private lateinit var flowViewApply: FlowViewApplyAdapter<String>//View提供者
 
     constructor(context: Context) : this(context, null)
 
@@ -32,11 +33,28 @@ class FlowViewGroup constructor(context: Context, attributeSet: AttributeSet?, d
     private fun init(context: Context, attributeSet: AttributeSet?) {
         val typeArray = context.obtainStyledAttributes(attributeSet, R.styleable.FlowViewGroup)
         horizontalSpace =
-            typeArray.getDimensionPixelSize(R.styleable.FlowViewGroup_horizontal_space, 30);
+            typeArray.getDimensionPixelSize(R.styleable.FlowViewGroup_horizontal_space, 30)
         verticalSpace =
             typeArray.getDimensionPixelSize(R.styleable.FlowViewGroup_vertical_space, 30)
         typeArray.recycle()
 
+        flowViewApply = DefaultFlowViewApply(context)
+    }
+
+    fun setData(contentList: MutableList<String>) {
+        removeAllViews()
+        for (i in 0 until contentList.size) {
+            val view = flowViewApply.getFlowView(contentList[i])
+            addView(view)
+        }
+    }
+
+    fun setData(contentList: MutableList<String>, flowViewApply: FlowViewApplyAdapter<String>) {
+        removeAllViews()
+        for (i in 0 until contentList.size) {
+            val view = flowViewApply.getFlowView(contentList[i])
+            addView(view)
+        }
     }
 
     override fun onLayout(p0: Boolean, p1: Int, p2: Int, p3: Int, p4: Int) {
@@ -48,7 +66,7 @@ class FlowViewGroup constructor(context: Context, attributeSet: AttributeSet?, d
             for (childView in viewList) {
 
                 val right = left + childView.measuredWidth
-                val bottom = top + childView.measuredHeight;
+                val bottom = top + childView.measuredHeight
                 childView.layout(
                     left,
                     top,
